@@ -103,9 +103,10 @@ class ParariusListingScraper(scrapers.ListingScraper):
         data = json.loads(
             self.html_soup.find("script", type="application/ld+json").string
         )
-        if "address" not in data:
+        address = data.get("address")
+        if not address:
             return None
-        return data["address"].get("postalCode")
+        return address.get("postalCode")
 
     def get_agent_name(self) -> t.Optional[str]:
         listings = self.html_soup.find_all("a", {"class": "agent-summary__title-link"})
@@ -144,6 +145,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
             "dl", {"class": "listing-features__list"}
         )
 
+        # TODO make keys lowercase
         info = self._get_listing_features_info(listing_features)
 
         # Remove the 'Description' feature from the features list,
