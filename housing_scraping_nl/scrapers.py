@@ -71,6 +71,7 @@ class ListingScraper(ScraperBase):
     @abc.abstractmethod
     def get_title(self) -> str:
         """Get the title of the listing."""
+
         pass
 
     @abc.abstractmethod
@@ -82,6 +83,7 @@ class ListingScraper(ScraperBase):
     @abc.abstractmethod
     def get_postal_code(self) -> t.Optional[str]:
         """Get the postal code of the listing, if found."""
+
         pass
 
     @abc.abstractmethod

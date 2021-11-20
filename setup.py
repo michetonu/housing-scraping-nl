@@ -12,7 +12,6 @@ setup(
         "fake-useragent~=0.1.11",
         "requests~=2.26.0",
         "tqdm~=4.62.3",
-        "",
     ],
     extras_require={
         "cicd": ["black=21.11b1", "coverage==6.1.2"],
