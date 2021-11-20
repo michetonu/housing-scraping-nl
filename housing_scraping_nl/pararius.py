@@ -12,7 +12,7 @@ from housing_scraping_nl import config
 from housing_scraping_nl import headers
 from housing_scraping_nl import scrapers
 
-logging.basicConfig(level='INFO')
+logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
 
@@ -59,7 +59,7 @@ class ParariusListingsPageScraper(scrapers.ListingsPageScraper):
     def get_all_listing_urls(self) -> t.List[str]:
         page_soup = self.html_soup(self.url)
         listings = page_soup.find_all("h2", {"class": "listing-search-item__title"})
-        return [listing.a.get('href') for listing in listings]
+        return [listing.a.get("href") for listing in listings]
 
 
 class ParariusListingScraper(scrapers.ListingScraper):
@@ -70,35 +70,42 @@ class ParariusListingScraper(scrapers.ListingScraper):
         if value_item.string:
             return name, value_item.string
 
-        value = value_item.find('div',
-                                {'class': 'listing-features__main-description'}).string
+        value = value_item.find(
+            "div", {"class": "listing-features__main-description"}
+        ).string
         return name, value
 
-    def _get_listing_features_info(self, listing_features: bs4.element.ResultSet) -> t.Dict[str, t.Any]:
+    def _get_listing_features_info(
+        self, listing_features: bs4.element.ResultSet
+    ) -> t.Dict[str, t.Any]:
         info = dict()
         for dlitem in listing_features:
-            for feature in dlitem.find_all('dt', {'class': 'listing-features__term'}):
+            for feature in dlitem.find_all("dt", {"class": "listing-features__term"}):
                 feature_name, feature_value = self._get_single_feature_info(feature)
                 if feature_name in info:
                     # Some keys are duplicates, so we want to add them together (e.g. Type of house
                     # could be present twice both as "Apartment" and "Mezzanine"
-                    feature_value = info[feature_name] + ', ' + feature_value
+                    feature_value = info[feature_name] + ", " + feature_value
                 info.update({feature_name: feature_value})
         return info
 
     def get_title(self) -> str:
-        title = self.html_soup.find_all("h1", {"class": "listing-detail-summary__title"})[0]
+        title = self.html_soup.find_all(
+            "h1", {"class": "listing-detail-summary__title"}
+        )[0]
         return title.string.replace("For rent: ", "").replace(" in Amsterdam", "")
 
     def get_photo_src(self) -> t.Optional[str]:
         img = self.html_soup.find_all("img", {"class": "picture__image"})[0]
-        return img.get('src')
+        return img.get("src")
 
     def get_postal_code(self) -> t.Optional[str]:
-        data = json.loads(self.html_soup.find('script', type='application/ld+json').string)
-        if 'address' not in data:
+        data = json.loads(
+            self.html_soup.find("script", type="application/ld+json").string
+        )
+        if "address" not in data:
             return None
-        return data['address'].get('postalCode')
+        return data["address"].get("postalCode")
 
     def get_agent_name(self) -> t.Optional[str]:
         listings = self.html_soup.find_all("a", {"class": "agent-summary__title-link"})
@@ -107,45 +114,51 @@ class ParariusListingScraper(scrapers.ListingScraper):
         return listings[0].string
 
     def get_agent_image_src(self) -> t.Optional[str]:
-        div = self.html_soup.find("div", {"class": "picture picture--agent-detail-logo"})
+        div = self.html_soup.find(
+            "div", {"class": "picture picture--agent-detail-logo"}
+        )
         if not div:
             return None
-        pic = div.find('picture')
-        image = pic.find('img', {"class": "picture__image"})
-        return image.get('src')
+        pic = div.find("picture")
+        image = pic.find("img", {"class": "picture__image"})
+        return image.get("src")
 
     def get_agent_link(self) -> str:
         a = self.html_soup.find("a", {"class": "agent-summary__logo-link"})
         return f"https://pararius.com{a['href']}"
 
     def get_description_text(self) -> t.Optional[str]:
-        description = self.html_soup.find("div", {"class": "listing-detail-description__additional"})
+        description = self.html_soup.find(
+            "div", {"class": "listing-detail-description__additional"}
+        )
         return description.get_text()
 
     def get_all_info(self) -> t.Dict[str, t.Any]:
         actual_listing_url = self.url
         # TODO check this
         # Some listing URLs do not seem to start with the right prefix
-        if not actual_listing_url.startswith('https://'):
-            actual_listing_url = f'https://pararius.com{actual_listing_url}'
+        if not actual_listing_url.startswith("https://"):
+            actual_listing_url = f"https://pararius.com{actual_listing_url}"
 
-        listing_features = self.html_soup.find_all("dl", {"class": "listing-features__list"})
+        listing_features = self.html_soup.find_all(
+            "dl", {"class": "listing-features__list"}
+        )
 
         info = self._get_listing_features_info(listing_features)
 
         # Remove the 'Description' feature from the features list,
         # since it is not always reliable. Add the one from the listing itself
-        info.pop('Description', None)
-        info['description'] = self.get_description_text()
+        info.pop("Description", None)
+        info["description"] = self.get_description_text()
 
         # Add extra features that need more processing
         info["url"] = actual_listing_url
-        info['postal_code'] = self.get_postal_code()
-        info['scraped_timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        info['agent'] = self.get_agent_name()
+        info["postal_code"] = self.get_postal_code()
+        info["scraped_timestamp"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        info["agent"] = self.get_agent_name()
         return info
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pass
     # TODO

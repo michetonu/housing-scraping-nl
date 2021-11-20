@@ -20,7 +20,9 @@ class HeaderCreator(abc.ABC):
 class FundaHeaderCreator(HeaderCreator):
     @cached_property
     def _headers_list(self) -> t.List[dict]:
-        with open(os.path.join(utils.SRC_PATH, "..", "resources", "headers.json"), "r") as headers_f:
+        with open(
+            os.path.join(utils.SRC_PATH, "..", "resources", "headers.json"), "r"
+        ) as headers_f:
             return json.load(headers_f)
 
     @property
@@ -40,4 +42,4 @@ class FundaHeaderCreator(HeaderCreator):
 class ParariusHeaderCreator(HeaderCreator):
     def __call__(self):
         ua = UserAgent()
-        return {'User-Agent': str(ua.random)}
+        return {"User-Agent": str(ua.random)}

@@ -26,12 +26,12 @@ class ScraperBase(abc.ABC):
     def html_soup(self) -> bs4.BeautifulSoup:
         """Return a BeautifulSoup instance of the page's HTML source code."""
         # Set the cookie policy on the Requests session in order to reject cookies
+        # This allows to get the latest version of a page if needed.
         s = requests.Session()
         s.cookies.set_policy(utils.BlockAll())
 
-        page = requests.get(self.url,
-                            headers=self.header_creator())
-        return bs4.BeautifulSoup(page.content, 'html.parser')
+        page = requests.get(self.url, headers=self.header_creator())
+        return bs4.BeautifulSoup(page.content, "html.parser")
 
 
 class ResultsScraper(ScraperBase):
