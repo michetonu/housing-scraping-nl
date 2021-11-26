@@ -82,6 +82,7 @@ class ParariusListingsPageScraper(scrapers.ListingsPageScraper):
 
 class ParariusListingScraper(scrapers.ListingScraper):
     """Class to scrape a single listing page from Pararius."""
+    base_url = "https://pararius.com"
 
     def __init__(self, url: str, header_creator: headers.HeaderCreator = hc):
         super().__init__(url, header_creator)
@@ -227,7 +228,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
         """Get the URL of the page of the agency, if found."""
 
         a = self.html_soup.find("a", {"class": "agent-summary__logo-link"})
-        return f"https://pararius.com{a['href']}"
+        return f"{self.base_url}{a['href']}"
 
     def get_description_text(self) -> t.Optional[str]:
         """Get the description of the listing as a string."""
@@ -243,8 +244,8 @@ class ParariusListingScraper(scrapers.ListingScraper):
         actual_listing_url = self.url
         # TODO check this
         # Some listing URLs do not seem to start with the right prefix
-        if not actual_listing_url.startswith("https://"):
-            actual_listing_url = f"https://pararius.com{actual_listing_url}"
+        if not actual_listing_url.startswith(self.base_url):
+            actual_listing_url = f"{self.base_url}{actual_listing_url}"
 
         info = self._get_listing_features_info()
         extra_info = self._add_extra_info()
