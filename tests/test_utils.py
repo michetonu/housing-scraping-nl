@@ -1,15 +1,4 @@
-# -*- encoding: utf-8 -*-
-"""Tests for the process utils.
-
-Author: Michele Tonutti
-Date: 2020-03-31
-"""
-import json
-import logging
-import os
-import shutil
 import unittest
-from unittest.mock import patch
 
 import requests
 

@@ -89,7 +89,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
         super().__init__(url, header_creator)
 
     @staticmethod
-    def _get_single_feature_value(feature_tag_name: bs4.element.Tag) -> str:
+    def _get_single_feature_value(feature_tag_name: bs4.element.Tag) -> t.Optional[str]:
         """Get the value of a single field from the listing's features.
 
         The value is the next sibling of <feature_tag_name>, sometimes
@@ -102,7 +102,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
 
         Returns
         -------
-        type : str
+        type : Optional[str]
         """
         value_item = feature_tag_name.find_next_sibling()
 
@@ -113,9 +113,9 @@ class ParariusListingScraper(scrapers.ListingScraper):
 
         # For more complex features, return the main description div
         # attribute.
-        value = value_item.find(
-            "div", {"class": "listing-features__main-description"}
-        ).string
+        value = value_item.find("span", {"class": "listing-features__main-description"})
+        if not value:
+            return None
         return str(value)
 
     @staticmethod
@@ -138,6 +138,8 @@ class ParariusListingScraper(scrapers.ListingScraper):
     def _update_info(self, info: t.Dict[str, t.Any], feature_tag_name: bs4.element.Tag):
         feature_name = self._get_single_feature_name(feature_tag_name)
         feature_value = self._get_single_feature_value(feature_tag_name)
+        if not feature_value:
+            return
         if feature_name in info:
             # Some keys are duplicates, so we want to add them together
             # (e.g. Type of house could be present twice both as
@@ -227,7 +229,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
         description = self.html_soup.find(
             "div", {"class": "listing-detail-description__additional"}
         )
-        return description.get_text()
+        return description.get_text().strip()
 
     def get_all_info(self) -> t.Dict[str, t.Any]:
         """Get all the information of the listing as a dictionary."""
