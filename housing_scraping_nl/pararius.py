@@ -82,13 +82,14 @@ class ParariusListingsPageScraper(scrapers.ListingsPageScraper):
 
 class ParariusListingScraper(scrapers.ListingScraper):
     """Class to scrape a single listing page from Pararius."""
+
     base_url = "https://pararius.com"
 
     def __init__(self, url: str, header_creator: headers.HeaderCreator = hc):
         super().__init__(url, header_creator)
 
     @staticmethod
-    def _get_single_feature_value(feature_tag_name: bs4.element.Tag) -> str:
+    def _get_single_feature_value(feature_tag_name: bs4.element.Tag) -> t.Optional[str]:
         """Get the value of a single field from the listing's features.
 
         The value is the next sibling of <feature_tag_name>, sometimes
@@ -101,7 +102,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
 
         Returns
         -------
-        type : str
+        type : Optional[str]
         """
         value_item = feature_tag_name.find_next_sibling()
 
@@ -112,9 +113,9 @@ class ParariusListingScraper(scrapers.ListingScraper):
 
         # For more complex features, return the main description div
         # attribute.
-        value = value_item.find(
-            "div", {"class": "listing-features__main-description"}
-        ).string
+        value = value_item.find("span", {"class": "listing-features__main-description"})
+        if not value:
+            return None
         return str(value)
 
     @staticmethod
@@ -134,11 +135,11 @@ class ParariusListingScraper(scrapers.ListingScraper):
         """
         return utils.convert_to_snake_case(str(feature_tag_name.string))
 
-    def _update_info(self,
-                     info: t.Dict[str, t.Any],
-                     feature_tag_name: bs4.element.Tag):
+    def _update_info(self, info: t.Dict[str, t.Any], feature_tag_name: bs4.element.Tag):
         feature_name = self._get_single_feature_name(feature_tag_name)
         feature_value = self._get_single_feature_value(feature_tag_name)
+        if not feature_value:
+            return
         if feature_name in info:
             # Some keys are duplicates, so we want to add them together
             # (e.g. Type of house could be present twice both as
@@ -153,9 +154,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
 
         info = dict()
         for dlitem in listing_features:
-            all_terms = dlitem.find_all(
-                "dt", {"class": "listing-features__term"}
-            )
+            all_terms = dlitem.find_all("dt", {"class": "listing-features__term"})
             for feature_tag_name in all_terms:
                 self._update_info(info, feature_tag_name)
         # Remove the 'Description' feature from the features list,
@@ -170,7 +169,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
             "description": self.get_description_text(),
             "postal_code": self.get_postal_code(),
             "scraped_timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "agent": self.get_agent_name()
+            "agent": self.get_agent_name(),
         }
 
     def get_title(self) -> str:
@@ -179,11 +178,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
         title = self.html_soup.find_all(
             "h1", {"class": "listing-detail-summary__title"}
         )[0]
-        return (
-            title
-            .string.replace("For rent: ", "")
-            .replace(" in Amsterdam", "")
-        )
+        return title.string.replace("For rent: ", "").replace(" in Amsterdam", "")
 
     def get_photo_src(self) -> t.Optional[str]:
         """Get the source URL of the main listing's photo, if found."""
@@ -205,9 +200,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
     def get_agent_name(self) -> t.Optional[str]:
         """Get the name of the agency responsible for the listing."""
 
-        listings = self.html_soup.find_all(
-            "a", {"class": "agent-summary__title-link"}
-        )
+        listings = self.html_soup.find_all("a", {"class": "agent-summary__title-link"})
         if not listings:
             return None
         return listings[0].string
@@ -236,7 +229,7 @@ class ParariusListingScraper(scrapers.ListingScraper):
         description = self.html_soup.find(
             "div", {"class": "listing-detail-description__additional"}
         )
-        return description.get_text()
+        return description.get_text().strip()
 
     def get_all_info(self) -> t.Dict[str, t.Any]:
         """Get all the information of the listing as a dictionary."""

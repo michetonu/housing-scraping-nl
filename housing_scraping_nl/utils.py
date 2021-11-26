@@ -33,7 +33,7 @@ def convert_to_snake_case(to_convert: str) -> str:
     'another_string'
 
     From:
-    https://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    https://www.w3resource.com/python-exercises/string/python-data-type-string-exercise-97.php
 
     Parameters
     ----------
@@ -45,4 +45,10 @@ def convert_to_snake_case(to_convert: str) -> str:
     type : str
         String converted to snake case.
     """
-    return re.sub(r'(?<!^)(?=[A-Z])', '_', to_convert).lower()
+    return "_".join(
+        re.sub(
+            "([A-Z][a-z]+)",
+            r" \1",
+            re.sub("([A-Z]+)", r" \1", to_convert.replace("-", " ")),
+        ).split()
+    ).lower()

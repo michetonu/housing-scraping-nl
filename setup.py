@@ -14,6 +14,6 @@ setup(
         "tqdm~=4.62.3",
     ],
     extras_require={
-        "cicd": ["black=21.11b1", "coverage==6.1.2"],
+        "cicd": ["black==21.11b1", "coverage==6.1.2"],
     },
 )
