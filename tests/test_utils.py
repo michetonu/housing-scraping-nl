@@ -15,6 +15,7 @@ import requests
 
 from housing_scraping_nl import utils
 
+
 class TestUtils(unittest.TestCase):
     def setUp(self) -> None:
         pass

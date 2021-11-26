@@ -45,7 +45,10 @@ def convert_to_snake_case(to_convert: str) -> str:
     type : str
         String converted to snake case.
     """
-    return '_'.join(
-        re.sub('([A-Z][a-z]+)', r' \1',
-               re.sub('([A-Z]+)', r' \1',
-                to_convert.replace('-', ' '))).split()).lower()
+    return "_".join(
+        re.sub(
+            "([A-Z][a-z]+)",
+            r" \1",
+            re.sub("([A-Z]+)", r" \1", to_convert.replace("-", " ")),
+        ).split()
+    ).lower()
